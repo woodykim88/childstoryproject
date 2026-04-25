@@ -26,6 +26,15 @@ python3 -m http.server 8000
 
 `main` 브랜치 푸시 시 Vercel이 자동 배포합니다.
 
+## 홈 화면 추가 (PWA)
+
+배포된 URL을 모바일 브라우저로 열어서:
+
+- **iOS Safari**: 공유 → "홈 화면에 추가"
+- **Android Chrome**: 메뉴 → "홈 화면에 설치"
+
+홈 화면 아이콘을 누르면 주소창 없이 풀스크린으로 실행됩니다. 잠금화면·제어센터에서도 다음/이전 트랙을 조작할 수 있습니다 (MediaSession API).
+
 ## 플레이리스트 수정
 
 `index.html` 상단의 `PLAYLIST` 배열을 직접 편집하면 됩니다.

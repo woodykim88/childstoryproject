@@ -8,7 +8,9 @@
   <meta name="apple-mobile-web-app-title" content="동화 극장" />
   <meta name="theme-color" content="#000000" />
   <title>세담이의 동화 극장</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%99%3C/text%3E%3C/svg%3E" />
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+  <link rel="apple-touch-icon" href="/icon.svg" />
   <style>
     :root {
       --bg: #000;
@@ -524,6 +526,25 @@
       bgBlur.classList.add("visible");
     }
 
+    function updateMediaSession() {
+      if (!("mediaSession" in navigator)) return;
+      const cur = PLAYLIST[state.currentIdx];
+      try {
+        navigator.mediaSession.metadata = new MediaMetadata({
+          title: cur.title,
+          artist: "세담이의 동화 극장",
+          album: `${state.currentIdx + 1} / ${PLAYLIST.length}`,
+          artwork: [
+            { src: thumbUrl(cur.id), sizes: "512x512", type: "image/jpeg" }
+          ]
+        });
+        navigator.mediaSession.setActionHandler("previoustrack", () => playPrev());
+        navigator.mediaSession.setActionHandler("nexttrack", () => playNext());
+        navigator.mediaSession.setActionHandler("play", () => { try { player && player.playVideo(); } catch (e) {} });
+        navigator.mediaSession.setActionHandler("pause", () => { try { player && player.pauseVideo(); } catch (e) {} });
+      } catch (e) {}
+    }
+
     function setPlayingVisual(playing) {
       state.isPlaying = playing;
       artwork.classList.toggle("playing", playing);
@@ -559,6 +580,24 @@
           startSession();
         });
       }
+    })();
+
+    // Install hint (only when not yet installed as PWA)
+    (function showInstallHint() {
+      const isStandalone =
+        window.matchMedia("(display-mode: standalone)").matches ||
+        window.navigator.standalone === true;
+      if (isStandalone) return;
+      const isIOS = /iP(hone|od|ad)/.test(navigator.platform) ||
+        (/Mac/.test(navigator.platform) && navigator.maxTouchPoints > 1);
+      const hint = document.createElement("p");
+      hint.className = "resume-hint";
+      hint.style.marginTop = "10px";
+      hint.style.opacity = "0.7";
+      hint.textContent = isIOS
+        ? "💡 공유 → '홈 화면에 추가'로 풀스크린 실행"
+        : "💡 브라우저 메뉴에서 '홈 화면에 설치'하면 풀스크린 실행";
+      splash.appendChild(hint);
     })();
 
     // ============================================
@@ -673,6 +712,8 @@
       const next = state.currentIdx + 1;
       if (next >= PLAYLIST.length) {
         showToast("마지막 동화까지 끝났어요 💤");
+        state.currentIdx = 0;
+        saveState();
         endSession();
         return;
       }
@@ -705,6 +746,7 @@
       trackIndexEl.textContent = `${state.currentIdx + 1} / ${PLAYLIST.length}`;
       const nxt = PLAYLIST[state.currentIdx + 1];
       nextTitleEl.textContent = nxt ? nxt.title : "마지막 동화예요";
+      updateMediaSession();
     }
 
     // ============================================

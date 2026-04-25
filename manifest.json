@@ -1,0 +1,20 @@
+{
+  "name": "세담이의 동화 극장",
+  "short_name": "동화 극장",
+  "description": "잠자리 동화를 자동 재생해주는 부모용 큐레이션 플레이어",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#000000",
+  "theme_color": "#000000",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
