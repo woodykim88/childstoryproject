@@ -123,43 +123,6 @@
       font-weight: 400;
     }
 
-    .timer-section {
-      width: 100%;
-      max-width: 420px;
-      margin-bottom: 40px;
-    }
-    .timer-section .label {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-3);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin: 0 0 14px;
-    }
-    .chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: center;
-    }
-    .chip {
-      padding: 11px 18px;
-      border-radius: 100px;
-      font-size: 15px;
-      font-weight: 500;
-      background: var(--surface);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 0.5px solid var(--hairline);
-      color: var(--text);
-      min-height: 44px;
-    }
-    .chip.selected {
-      background: var(--text);
-      color: #000;
-      border-color: transparent;
-    }
-
     .primary-btn {
       width: 100%;
       max-width: 420px;
@@ -222,14 +185,6 @@
       text-transform: uppercase;
       margin: 0;
     }
-    .header-timer {
-      font-size: 14px;
-      font-weight: 600;
-      margin: 2px 0 0;
-      color: var(--text);
-      font-variant-numeric: tabular-nums;
-    }
-    .header-timer.empty { color: var(--text-3); font-weight: 400; }
 
     .artwork-wrap {
       display: flex;
@@ -406,18 +361,7 @@
   <section id="splash" class="screen active">
     <div class="splash-logo">🌙</div>
     <h1>세담이의 동화 극장</h1>
-    <p class="subtitle">자장가처럼 들려주는 31편의 동화</p>
-
-    <div class="timer-section">
-      <p class="label">잠자리 타이머</p>
-      <div class="chips" id="timer-chips">
-        <button class="chip" data-min="0">끄기</button>
-        <button class="chip" data-min="15">15분</button>
-        <button class="chip selected" data-min="30">30분</button>
-        <button class="chip" data-min="45">45분</button>
-        <button class="chip" data-min="60">60분</button>
-      </div>
-    </div>
+    <p class="subtitle">자장가처럼 들려주는 29편의 동화</p>
 
     <button id="start-btn" class="primary-btn">▶  동화 시작</button>
     <p class="resume-hint" id="resume-hint" hidden></p>
@@ -431,7 +375,6 @@
       <button class="close-btn" id="close-btn" aria-label="닫기">✕</button>
       <div class="header-info">
         <p class="header-label">Now Playing</p>
-        <p class="header-timer empty" id="header-timer">타이머 없음</p>
       </div>
       <div style="width: 36px;"></div>
     </header>
@@ -514,13 +457,8 @@
     const STORAGE_KEY = "sedam.state.v1";
 
     const state = {
-      selectedTimerMin: 30,
       currentIdx: 0,
       isPlaying: false,
-      sleepTimeoutId: null,
-      sleepEndAt: null,
-      tickIntervalId: null,
-      fadeIntervalId: null,
       errorSkipTimeoutId: null,
       apiReady: false,
       pendingStart: false
@@ -543,7 +481,6 @@
     const currentTitleEl = $("current-title");
     const trackIndexEl = $("track-index");
     const nextTitleEl = $("next-title");
-    const headerTimerEl = $("header-timer");
     const bgBlur = $("bg-blur");
     const artwork = $("artwork");
     const artworkFallback = $("artwork-fallback");
@@ -567,8 +504,7 @@
     function saveState() {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({
-          idx: state.currentIdx,
-          timerMin: state.selectedTimerMin
+          idx: state.currentIdx
         }));
       } catch (e) {}
     }
@@ -579,14 +515,6 @@
         if (!raw) return null;
         return JSON.parse(raw);
       } catch (e) { return null; }
-    }
-
-    function formatRemaining(ms) {
-      if (ms <= 0) return "00:00";
-      const total = Math.ceil(ms / 1000);
-      const m = Math.floor(total / 60);
-      const s = total % 60;
-      return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
     }
 
     function setArtwork(id) {
@@ -608,14 +536,6 @@
     // ============================================
     // Splash interactions
     // ============================================
-    $("timer-chips").addEventListener("click", (e) => {
-      const btn = e.target.closest(".chip");
-      if (!btn) return;
-      $("timer-chips").querySelectorAll(".chip").forEach(c => c.classList.remove("selected"));
-      btn.classList.add("selected");
-      state.selectedTimerMin = parseInt(btn.dataset.min, 10);
-    });
-
     startBtn.addEventListener("click", () => {
       if (navigator.vibrate) navigator.vibrate(8);
       startSession();
@@ -638,12 +558,6 @@
           state.currentIdx = saved.idx;
           startSession();
         });
-        if (saved.timerMin != null) {
-          $("timer-chips").querySelectorAll(".chip").forEach(c => {
-            c.classList.toggle("selected", parseInt(c.dataset.min, 10) === saved.timerMin);
-          });
-          state.selectedTimerMin = saved.timerMin;
-        }
       }
     })();
 
@@ -726,7 +640,6 @@
         actuallyStart();
       }
 
-      startSleepTimer(state.selectedTimerMin);
       saveState();
     }
 
@@ -734,7 +647,6 @@
       try { player && player.stopVideo(); } catch (e) {}
       try { player && player.destroy(); } catch (e) {}
       player = null;
-      stopSleepTimer();
       releaseWakeLock();
       setPlayingVisual(false);
       playerScreen.classList.remove("active");
@@ -793,69 +705,6 @@
       trackIndexEl.textContent = `${state.currentIdx + 1} / ${PLAYLIST.length}`;
       const nxt = PLAYLIST[state.currentIdx + 1];
       nextTitleEl.textContent = nxt ? nxt.title : "마지막 동화예요";
-    }
-
-    // ============================================
-    // Sleep timer + volume fadeout
-    // ============================================
-    function startSleepTimer(min) {
-      stopSleepTimer();
-      if (!min || min <= 0) {
-        headerTimerEl.textContent = "타이머 없음";
-        headerTimerEl.classList.add("empty");
-        return;
-      }
-      const ms = min * 60 * 1000;
-      state.sleepEndAt = Date.now() + ms;
-      headerTimerEl.classList.remove("empty");
-      tickTimer();
-      state.tickIntervalId = setInterval(tickTimer, 1000);
-
-      // Schedule fadeout (last 30s)
-      const fadeStartIn = ms - 30000;
-      if (fadeStartIn > 0) {
-        state.sleepTimeoutId = setTimeout(() => {
-          startVolumeFade(30000);
-          // Hard end after fade
-          setTimeout(() => endSession(), 30000);
-        }, fadeStartIn);
-      } else {
-        // Very short timer: just end immediately
-        state.sleepTimeoutId = setTimeout(() => endSession(), ms);
-      }
-    }
-
-    function stopSleepTimer() {
-      clearTimeout(state.sleepTimeoutId);
-      clearInterval(state.tickIntervalId);
-      clearInterval(state.fadeIntervalId);
-      state.sleepTimeoutId = null;
-      state.tickIntervalId = null;
-      state.fadeIntervalId = null;
-      state.sleepEndAt = null;
-    }
-
-    function tickTimer() {
-      if (!state.sleepEndAt) return;
-      const remaining = state.sleepEndAt - Date.now();
-      headerTimerEl.textContent = formatRemaining(Math.max(0, remaining));
-    }
-
-    function startVolumeFade(durationMs) {
-      if (!player || typeof player.setVolume !== "function") return;
-      let vol = 100;
-      const steps = 30;
-      const stepMs = durationMs / steps;
-      const decrement = 100 / steps;
-      state.fadeIntervalId = setInterval(() => {
-        vol -= decrement;
-        if (vol <= 0) {
-          try { player.setVolume(0); } catch (e) {}
-          clearInterval(state.fadeIntervalId);
-        } else {
-          try { player.setVolume(Math.max(0, Math.round(vol))); } catch (e) {}
-        }
-      }, stepMs);
     }
 
     // ============================================
