@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="동화 극장" />
+  <meta name="theme-color" content="#000000" />
+  <title>세담이의 동화 극장</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%99%3C/text%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --bg: #000;
+      --surface: rgba(255, 255, 255, 0.08);
+      --surface-strong: rgba(255, 255, 255, 0.14);
+      --hairline: rgba(255, 255, 255, 0.12);
+      --text: rgba(255, 255, 255, 0.96);
+      --text-2: rgba(255, 255, 255, 0.62);
+      --text-3: rgba(255, 255, 255, 0.38);
+      --accent: #0A84FF;
+      --accent-pink: #FF375F;
+      --ease: cubic-bezier(0.32, 0.72, 0, 1);
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; padding: 0; height: 100%; overscroll-behavior: none; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, "Apple SD Gothic Neo", "Pretendard", sans-serif;
+      background: #000;
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      letter-spacing: -0.015em;
+      user-select: none;
+      -webkit-user-select: none;
+      overflow: hidden;
+    }
+
+    button {
+      font-family: inherit;
+      color: inherit;
+      border: 0;
+      background: transparent;
+      cursor: pointer;
+      transition: transform 0.18s var(--ease), background 0.25s var(--ease), opacity 0.25s var(--ease);
+    }
+    button:active:not(:disabled) { transform: scale(0.94); }
+    button:disabled { opacity: 0.35; cursor: default; }
+
+    .glass {
+      background: var(--surface);
+      backdrop-filter: blur(40px) saturate(180%);
+      -webkit-backdrop-filter: blur(40px) saturate(180%);
+      border: 0.5px solid var(--hairline);
+    }
+
+    /* === Background blur (album-art halo) === */
+    .bg-blur {
+      position: fixed;
+      inset: -15%;
+      background-size: cover;
+      background-position: center;
+      filter: blur(80px) brightness(0.45) saturate(1.6);
+      transform: scale(1.3);
+      transition: background-image 1.2s var(--ease), opacity 1s var(--ease);
+      z-index: -2;
+      opacity: 0;
+    }
+    .bg-blur.visible { opacity: 1; }
+    .bg-vignette {
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at top, rgba(20, 20, 30, 0.0) 0%, rgba(0, 0, 0, 0.55) 100%),
+        linear-gradient(180deg, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.0) 30%, rgba(0,0,0,0.0) 70%, rgba(0,0,0,0.6) 100%);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* === Screens === */
+    .screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
+      transform: translateY(8px);
+    }
+    .screen.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    /* === Splash === */
+    #splash {
+      padding: calc(var(--safe-top) + 24px) 24px calc(var(--safe-bottom) + 32px);
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      text-align: center;
+    }
+    .splash-logo {
+      font-size: 84px;
+      line-height: 1;
+      margin-bottom: 18px;
+      filter: drop-shadow(0 8px 30px rgba(255,255,255,0.15));
+    }
+    #splash h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: -0.03em;
+    }
+    #splash .subtitle {
+      font-size: 16px;
+      color: var(--text-2);
+      margin: 8px 0 56px;
+      font-weight: 400;
+    }
+
+    .timer-section {
+      width: 100%;
+      max-width: 420px;
+      margin-bottom: 40px;
+    }
+    .timer-section .label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-3);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin: 0 0 14px;
+    }
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+    }
+    .chip {
+      padding: 11px 18px;
+      border-radius: 100px;
+      font-size: 15px;
+      font-weight: 500;
+      background: var(--surface);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 0.5px solid var(--hairline);
+      color: var(--text);
+      min-height: 44px;
+    }
+    .chip.selected {
+      background: var(--text);
+      color: #000;
+      border-color: transparent;
+    }
+
+    .primary-btn {
+      width: 100%;
+      max-width: 420px;
+      padding: 18px 24px;
+      border-radius: 16px;
+      background: var(--text);
+      color: #000;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      box-shadow: 0 12px 40px rgba(255,255,255,0.18);
+      min-height: 56px;
+    }
+    .resume-hint {
+      margin: 18px 0 0;
+      font-size: 13px;
+      color: var(--text-3);
+    }
+    .resume-hint a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    /* === Player === */
+    #player-screen {
+      padding: calc(var(--safe-top) + 8px) 20px calc(var(--safe-bottom) + 24px);
+      gap: 0;
+    }
+
+    .player-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 8px 12px;
+      border-radius: 100px;
+      margin-bottom: 28px;
+    }
+    .close-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--surface-strong);
+      font-size: 14px;
+      color: var(--text-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .header-info {
+      flex: 1;
+      text-align: center;
+      padding: 0 12px;
+    }
+    .header-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-3);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin: 0;
+    }
+    .header-timer {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 2px 0 0;
+      color: var(--text);
+      font-variant-numeric: tabular-nums;
+    }
+    .header-timer.empty { color: var(--text-3); font-weight: 400; }
+
+    .artwork-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex: 1;
+      min-height: 0;
+    }
+    .artwork {
+      width: min(86vw, 380px);
+      aspect-ratio: 1 / 1;
+      border-radius: 22px;
+      overflow: hidden;
+      box-shadow:
+        0 30px 80px rgba(0, 0, 0, 0.55),
+        0 0 0 0.5px rgba(255, 255, 255, 0.1) inset;
+      position: relative;
+      background: #111;
+      transition: transform 0.6s var(--ease);
+    }
+    .artwork.playing { transform: scale(1); }
+    .artwork.paused { transform: scale(0.92); }
+    #player {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+    #player iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+    .artwork-fallback {
+      position: absolute;
+      inset: 0;
+      background-size: cover;
+      background-position: center;
+      pointer-events: none;
+    }
+
+    .track-info {
+      text-align: center;
+      padding: 28px 8px 24px;
+    }
+    .track-info h2 {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+    }
+    .track-info .track-index {
+      font-size: 13px;
+      color: var(--text-3);
+      margin: 6px 0 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+      padding: 8px 0 20px;
+    }
+    .ctrl-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text);
+    }
+    .ctrl-btn.side {
+      width: 64px;
+      height: 64px;
+    }
+    .ctrl-btn.side svg {
+      width: 36px;
+      height: 36px;
+    }
+    .ctrl-btn.primary {
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      background: var(--text);
+      color: #000;
+      box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
+    }
+    .ctrl-btn.primary svg {
+      width: 36px;
+      height: 36px;
+    }
+
+    .up-next {
+      padding: 14px 18px;
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .up-next-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-3);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+    .up-next-title {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      margin: 0;
+      flex: 1;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .up-next-icon {
+      color: var(--text-3);
+      flex-shrink: 0;
+    }
+
+    /* === Toast === */
+    .toast {
+      position: fixed;
+      top: calc(var(--safe-top) + 16px);
+      left: 50%;
+      transform: translateX(-50%) translateY(-120%);
+      padding: 12px 20px;
+      background: rgba(20, 20, 22, 0.85);
+      backdrop-filter: blur(40px) saturate(180%);
+      -webkit-backdrop-filter: blur(40px) saturate(180%);
+      border: 0.5px solid var(--hairline);
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+      z-index: 100;
+      transition: transform 0.5s var(--ease);
+      pointer-events: none;
+      max-width: 90vw;
+      white-space: nowrap;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* === Loading shimmer === */
+    @keyframes pulse {
+      0%, 100% { opacity: 0.4; }
+      50% { opacity: 0.8; }
+    }
+    .loading { animation: pulse 1.6s ease-in-out infinite; }
+
+    /* Small phones */
+    @media (max-height: 700px) {
+      .artwork { width: min(70vw, 280px); }
+      .track-info { padding: 18px 8px 14px; }
+      .track-info h2 { font-size: 19px; }
+      .controls { gap: 24px; padding: 4px 0 14px; }
+      .ctrl-btn.primary { width: 72px; height: 72px; }
+      .ctrl-btn.side { width: 56px; height: 56px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-blur" id="bg-blur"></div>
+  <div class="bg-vignette"></div>
+
+  <!-- ========================================= -->
+  <!-- Splash -->
+  <!-- ========================================= -->
+  <section id="splash" class="screen active">
+    <div class="splash-logo">🌙</div>
+    <h1>세담이의 동화 극장</h1>
+    <p class="subtitle">자장가처럼 들려주는 31편의 동화</p>
+
+    <div class="timer-section">
+      <p class="label">잠자리 타이머</p>
+      <div class="chips" id="timer-chips">
+        <button class="chip" data-min="0">끄기</button>
+        <button class="chip" data-min="15">15분</button>
+        <button class="chip selected" data-min="30">30분</button>
+        <button class="chip" data-min="45">45분</button>
+        <button class="chip" data-min="60">60분</button>
+      </div>
+    </div>
+
+    <button id="start-btn" class="primary-btn">▶  동화 시작</button>
+    <p class="resume-hint" id="resume-hint" hidden></p>
+  </section>
+
+  <!-- ========================================= -->
+  <!-- Player -->
+  <!-- ========================================= -->
+  <section id="player-screen" class="screen">
+    <header class="player-header glass">
+      <button class="close-btn" id="close-btn" aria-label="닫기">✕</button>
+      <div class="header-info">
+        <p class="header-label">Now Playing</p>
+        <p class="header-timer empty" id="header-timer">타이머 없음</p>
+      </div>
+      <div style="width: 36px;"></div>
+    </header>
+
+    <div class="artwork-wrap">
+      <div class="artwork paused" id="artwork">
+        <div class="artwork-fallback" id="artwork-fallback"></div>
+        <div id="player"></div>
+      </div>
+    </div>
+
+    <div class="track-info">
+      <h2 id="current-title" class="loading">불러오는 중…</h2>
+      <p class="track-index" id="track-index"></p>
+    </div>
+
+    <div class="controls">
+      <button class="ctrl-btn side" id="prev-btn" aria-label="이전">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zM9.5 12l8.5 6V6z"/></svg>
+      </button>
+      <button class="ctrl-btn primary" id="play-btn" aria-label="재생/일시정지">
+        <svg id="play-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+      <button class="ctrl-btn side" id="next-btn" aria-label="다음">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg>
+      </button>
+    </div>
+
+    <div class="up-next glass">
+      <span class="up-next-label">Up Next</span>
+      <p class="up-next-title" id="next-title">—</p>
+      <svg class="up-next-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 6l6 6-6 6V6z"/></svg>
+    </div>
+  </section>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ============================================
+    // Playlist
+    // ============================================
+    // 라푼젤은 단일 영상이 아닌 플레이리스트라 v1 제외.
+    // 인어공주는 백설공주와 동일 ID로 들어와 있어 v1 제외 (원본 URL 확인 필요).
+    const PLAYLIST = [
+      { id: "N88M1EAnG2c", title: "신데렐라" },
+      { id: "Im_Dcx4_3qQ", title: "백설공주" },
+      { id: "2CZyJQ9AfHQ", title: "잠자는 숲속의 공주" },
+      { id: "2EHBNQQ_v-o", title: "미녀와 야수" },
+      { id: "U4gTl2m8Ih4", title: "엄지공주" },
+      { id: "HEag7XVZvXg", title: "선화공주" },
+      { id: "btsYiJoNV-k", title: "양치기 소년" },
+      { id: "ZNu5CBp1_0U", title: "봄해님과 겨울바람" },
+      { id: "75Xa41xBfLI", title: "은혜 갚은 생쥐" },
+      { id: "aKijuAPV3Og", title: "피터팬" },
+      { id: "8_iNVlPui-8", title: "알라딘과 요술램프" },
+      { id: "Ql8PfongcSA", title: "스크루지 크리스마스 캐럴" },
+      { id: "KeuEVquuWOQ", title: "꼬마유령의 친구 만들기" },
+      { id: "xKtA7190Eu4", title: "장화신은 고양이" },
+      { id: "DrPcx9QZtrk", title: "충치는 왜 생길까" },
+      { id: "kyJZW2gis9M", title: "똥은 왜 누울까" },
+      { id: "P77QILQpfTw", title: "눈물은 왜 짤까" },
+      { id: "kcjkaqJv3rM", title: "세 마리 소와 사자" },
+      { id: "krAxwCtjM2k", title: "돌멩이 수프" },
+      { id: "cW9AUJSfaN0", title: "단방귀 장수" },
+      { id: "2sEjhLNHQcY", title: "두 마리 염소" },
+      { id: "Q0aNshBu7Tc", title: "세 가지 소원" },
+      { id: "VQySLGH-4Qo", title: "완두콩 다섯 알" },
+      { id: "Z0vaO_yKiwQ", title: "우물 안 개구리" },
+      { id: "2xWS7lc50ac", title: "잠자는 원숭이와 노는 원숭이" },
+      { id: "wC8X6mMUVws", title: "당나귀와 소금" },
+      { id: "elplR7TzD64", title: "제우스와 거북이" },
+      { id: "c0ZAPSxTzqI", title: "소가 된 게으름뱅이" },
+      { id: "goD1u6_PvFs", title: "포도밭에 숨긴 보물" }
+    ];
+
+    // ============================================
+    // State
+    // ============================================
+    const STORAGE_KEY = "sedam.state.v1";
+
+    const state = {
+      selectedTimerMin: 30,
+      currentIdx: 0,
+      isPlaying: false,
+      sleepTimeoutId: null,
+      sleepEndAt: null,
+      tickIntervalId: null,
+      fadeIntervalId: null,
+      errorSkipTimeoutId: null,
+      apiReady: false,
+      pendingStart: false
+    };
+
+    let player = null;
+
+    // ============================================
+    // DOM refs
+    // ============================================
+    const $ = (id) => document.getElementById(id);
+    const splash = $("splash");
+    const playerScreen = $("player-screen");
+    const startBtn = $("start-btn");
+    const closeBtn = $("close-btn");
+    const playBtn = $("play-btn");
+    const playIcon = $("play-icon");
+    const prevBtn = $("prev-btn");
+    const nextBtn = $("next-btn");
+    const currentTitleEl = $("current-title");
+    const trackIndexEl = $("track-index");
+    const nextTitleEl = $("next-title");
+    const headerTimerEl = $("header-timer");
+    const bgBlur = $("bg-blur");
+    const artwork = $("artwork");
+    const artworkFallback = $("artwork-fallback");
+    const toastEl = $("toast");
+    const resumeHint = $("resume-hint");
+
+    // ============================================
+    // Helpers
+    // ============================================
+    function thumbUrl(id) {
+      return `https://i.ytimg.com/vi/${id}/maxresdefault.jpg`;
+    }
+
+    function showToast(msg, ms = 2400) {
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      clearTimeout(showToast._t);
+      showToast._t = setTimeout(() => toastEl.classList.remove("show"), ms);
+    }
+
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          idx: state.currentIdx,
+          timerMin: state.selectedTimerMin
+        }));
+      } catch (e) {}
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+      } catch (e) { return null; }
+    }
+
+    function formatRemaining(ms) {
+      if (ms <= 0) return "00:00";
+      const total = Math.ceil(ms / 1000);
+      const m = Math.floor(total / 60);
+      const s = total % 60;
+      return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    }
+
+    function setArtwork(id) {
+      const url = thumbUrl(id);
+      artworkFallback.style.backgroundImage = `url('${url}')`;
+      bgBlur.style.backgroundImage = `url('${url}')`;
+      bgBlur.classList.add("visible");
+    }
+
+    function setPlayingVisual(playing) {
+      state.isPlaying = playing;
+      artwork.classList.toggle("playing", playing);
+      artwork.classList.toggle("paused", !playing);
+      playIcon.innerHTML = playing
+        ? '<path d="M6 5h4v14H6zM14 5h4v14h-4z"/>'
+        : '<path d="M8 5v14l11-7z"/>';
+    }
+
+    // ============================================
+    // Splash interactions
+    // ============================================
+    $("timer-chips").addEventListener("click", (e) => {
+      const btn = e.target.closest(".chip");
+      if (!btn) return;
+      $("timer-chips").querySelectorAll(".chip").forEach(c => c.classList.remove("selected"));
+      btn.classList.add("selected");
+      state.selectedTimerMin = parseInt(btn.dataset.min, 10);
+    });
+
+    startBtn.addEventListener("click", () => {
+      if (navigator.vibrate) navigator.vibrate(8);
+      startSession();
+    });
+
+    closeBtn.addEventListener("click", () => {
+      if (navigator.vibrate) navigator.vibrate(8);
+      endSession();
+    });
+
+    // Resume hint on splash
+    (function showResumeHint() {
+      const saved = loadState();
+      if (saved && saved.idx > 0 && saved.idx < PLAYLIST.length) {
+        const t = PLAYLIST[saved.idx].title;
+        resumeHint.innerHTML = `이어보기: <a href="#" id="resume-link">${t}</a>`;
+        resumeHint.hidden = false;
+        $("resume-link").addEventListener("click", (e) => {
+          e.preventDefault();
+          state.currentIdx = saved.idx;
+          startSession();
+        });
+        if (saved.timerMin != null) {
+          $("timer-chips").querySelectorAll(".chip").forEach(c => {
+            c.classList.toggle("selected", parseInt(c.dataset.min, 10) === saved.timerMin);
+          });
+          state.selectedTimerMin = saved.timerMin;
+        }
+      }
+    })();
+
+    // ============================================
+    // YouTube IFrame API
+    // ============================================
+    window.onYouTubeIframeAPIReady = function () {
+      state.apiReady = true;
+      if (state.pendingStart) {
+        state.pendingStart = false;
+        actuallyStart();
+      }
+    };
+
+    (function loadYTApi() {
+      const tag = document.createElement("script");
+      tag.src = "https://www.youtube.com/iframe_api";
+      document.head.appendChild(tag);
+    })();
+
+    function actuallyStart() {
+      const item = PLAYLIST[state.currentIdx];
+      setArtwork(item.id);
+      updateTitles();
+
+      player = new YT.Player("player", {
+        videoId: item.id,
+        host: "https://www.youtube-nocookie.com",
+        playerVars: {
+          autoplay: 1,
+          controls: 0,
+          disablekb: 1,
+          modestbranding: 1,
+          rel: 0,
+          iv_load_policy: 3,
+          fs: 0,
+          playsinline: 1,
+          origin: location.origin || ""
+        },
+        events: {
+          onReady: onPlayerReady,
+          onStateChange: onPlayerStateChange,
+          onError: onPlayerError
+        }
+      });
+    }
+
+    function onPlayerReady() {
+      try { player.setVolume(100); } catch (e) {}
+      try { player.playVideo(); } catch (e) {}
+      requestWakeLock();
+    }
+
+    function onPlayerStateChange(e) {
+      const S = YT.PlayerState;
+      if (e.data === S.PLAYING) setPlayingVisual(true);
+      else if (e.data === S.PAUSED) setPlayingVisual(false);
+      else if (e.data === S.ENDED) playNext(true);
+    }
+
+    function onPlayerError(e) {
+      // 2: invalid id, 5: html5 error, 100: removed/private, 101/150: embed disabled
+      console.warn("YT error", e.data);
+      showToast("이 동화는 잠시 후 다시 시도해요…");
+      clearTimeout(state.errorSkipTimeoutId);
+      state.errorSkipTimeoutId = setTimeout(() => playNext(true), 3000);
+    }
+
+    // ============================================
+    // Session / Playback
+    // ============================================
+    function startSession() {
+      // First user gesture context — autoplay allowed from here
+      splash.classList.remove("active");
+      playerScreen.classList.add("active");
+
+      if (!state.apiReady) {
+        state.pendingStart = true;
+      } else {
+        actuallyStart();
+      }
+
+      startSleepTimer(state.selectedTimerMin);
+      saveState();
+    }
+
+    function endSession() {
+      try { player && player.stopVideo(); } catch (e) {}
+      try { player && player.destroy(); } catch (e) {}
+      player = null;
+      stopSleepTimer();
+      releaseWakeLock();
+      setPlayingVisual(false);
+      playerScreen.classList.remove("active");
+      splash.classList.add("active");
+      bgBlur.classList.remove("visible");
+    }
+
+    function loadIndex(idx, autoplay = true) {
+      if (idx < 0 || idx >= PLAYLIST.length) return;
+      state.currentIdx = idx;
+      const item = PLAYLIST[idx];
+      setArtwork(item.id);
+      updateTitles();
+      saveState();
+      if (player && typeof player.loadVideoById === "function") {
+        try {
+          if (autoplay) player.loadVideoById(item.id);
+          else player.cueVideoById(item.id);
+        } catch (e) {}
+      }
+    }
+
+    function playNext(auto = false) {
+      const next = state.currentIdx + 1;
+      if (next >= PLAYLIST.length) {
+        showToast("마지막 동화까지 끝났어요 💤");
+        endSession();
+        return;
+      }
+      loadIndex(next, true);
+    }
+
+    function playPrev() {
+      const prev = state.currentIdx - 1;
+      if (prev < 0) {
+        // restart current
+        try { player && player.seekTo(0, true); } catch (e) {}
+        return;
+      }
+      loadIndex(prev, true);
+    }
+
+    function togglePlay() {
+      if (!player) return;
+      try {
+        const s = player.getPlayerState();
+        if (s === YT.PlayerState.PLAYING) player.pauseVideo();
+        else player.playVideo();
+      } catch (e) {}
+    }
+
+    function updateTitles() {
+      const cur = PLAYLIST[state.currentIdx];
+      currentTitleEl.textContent = cur.title;
+      currentTitleEl.classList.remove("loading");
+      trackIndexEl.textContent = `${state.currentIdx + 1} / ${PLAYLIST.length}`;
+      const nxt = PLAYLIST[state.currentIdx + 1];
+      nextTitleEl.textContent = nxt ? nxt.title : "마지막 동화예요";
+    }
+
+    // ============================================
+    // Sleep timer + volume fadeout
+    // ============================================
+    function startSleepTimer(min) {
+      stopSleepTimer();
+      if (!min || min <= 0) {
+        headerTimerEl.textContent = "타이머 없음";
+        headerTimerEl.classList.add("empty");
+        return;
+      }
+      const ms = min * 60 * 1000;
+      state.sleepEndAt = Date.now() + ms;
+      headerTimerEl.classList.remove("empty");
+      tickTimer();
+      state.tickIntervalId = setInterval(tickTimer, 1000);
+
+      // Schedule fadeout (last 30s)
+      const fadeStartIn = ms - 30000;
+      if (fadeStartIn > 0) {
+        state.sleepTimeoutId = setTimeout(() => {
+          startVolumeFade(30000);
+          // Hard end after fade
+          setTimeout(() => endSession(), 30000);
+        }, fadeStartIn);
+      } else {
+        // Very short timer: just end immediately
+        state.sleepTimeoutId = setTimeout(() => endSession(), ms);
+      }
+    }
+
+    function stopSleepTimer() {
+      clearTimeout(state.sleepTimeoutId);
+      clearInterval(state.tickIntervalId);
+      clearInterval(state.fadeIntervalId);
+      state.sleepTimeoutId = null;
+      state.tickIntervalId = null;
+      state.fadeIntervalId = null;
+      state.sleepEndAt = null;
+    }
+
+    function tickTimer() {
+      if (!state.sleepEndAt) return;
+      const remaining = state.sleepEndAt - Date.now();
+      headerTimerEl.textContent = formatRemaining(Math.max(0, remaining));
+    }
+
+    function startVolumeFade(durationMs) {
+      if (!player || typeof player.setVolume !== "function") return;
+      let vol = 100;
+      const steps = 30;
+      const stepMs = durationMs / steps;
+      const decrement = 100 / steps;
+      state.fadeIntervalId = setInterval(() => {
+        vol -= decrement;
+        if (vol <= 0) {
+          try { player.setVolume(0); } catch (e) {}
+          clearInterval(state.fadeIntervalId);
+        } else {
+          try { player.setVolume(Math.max(0, Math.round(vol))); } catch (e) {}
+        }
+      }, stepMs);
+    }
+
+    // ============================================
+    // Wake Lock
+    // ============================================
+    let wakeLock = null;
+    async function requestWakeLock() {
+      try {
+        if ("wakeLock" in navigator) {
+          wakeLock = await navigator.wakeLock.request("screen");
+          wakeLock.addEventListener("release", () => { wakeLock = null; });
+        }
+      } catch (e) {}
+    }
+    function releaseWakeLock() {
+      try { wakeLock && wakeLock.release(); } catch (e) {}
+      wakeLock = null;
+    }
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && state.isPlaying && !wakeLock) {
+        requestWakeLock();
+      }
+    });
+
+    // ============================================
+    // Buttons + swipe
+    // ============================================
+    playBtn.addEventListener("click", () => {
+      if (navigator.vibrate) navigator.vibrate(8);
+      togglePlay();
+    });
+    prevBtn.addEventListener("click", () => {
+      if (navigator.vibrate) navigator.vibrate(8);
+      playPrev();
+    });
+    nextBtn.addEventListener("click", () => {
+      if (navigator.vibrate) navigator.vibrate(8);
+      playNext();
+    });
+
+    // Swipe on artwork
+    let touchStartX = 0, touchStartY = 0, touchStartT = 0;
+    artwork.addEventListener("touchstart", (e) => {
+      const t = e.changedTouches[0];
+      touchStartX = t.screenX;
+      touchStartY = t.screenY;
+      touchStartT = Date.now();
+    }, { passive: true });
+    artwork.addEventListener("touchend", (e) => {
+      const t = e.changedTouches[0];
+      const dx = t.screenX - touchStartX;
+      const dy = t.screenY - touchStartY;
+      const dt = Date.now() - touchStartT;
+      if (dt > 600) return;
+      if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy)) return;
+      if (navigator.vibrate) navigator.vibrate(8);
+      if (dx < 0) playNext(); else playPrev();
+    }, { passive: true });
+
+    // Prevent double-tap zoom on iOS
+    let lastTap = 0;
+    document.addEventListener("touchend", (e) => {
+      const now = Date.now();
+      if (now - lastTap < 350) e.preventDefault();
+      lastTap = now;
+    }, { passive: false });
+  </script>
+</body>
+</html>
