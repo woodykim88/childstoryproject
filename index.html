@@ -250,7 +250,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 32px;
+      gap: 14px;
       padding: 8px 0 20px;
     }
     .ctrl-btn {
@@ -310,6 +310,202 @@
       flex-shrink: 0;
     }
 
+    /* === Header actions (shuffle / list) === */
+    .header-actions {
+      display: flex;
+      gap: 6px;
+    }
+    .header-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--surface-strong);
+      color: var(--text-2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+    .header-btn.active {
+      color: var(--accent);
+      background: rgba(10, 132, 255, 0.18);
+    }
+    .header-btn svg { width: 18px; height: 18px; }
+
+    /* === Progress bar === */
+    .progress-wrap {
+      padding: 0 4px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 100px;
+      position: relative;
+      cursor: pointer;
+      touch-action: none;
+      transition: height 0.2s var(--ease);
+    }
+    .progress-bar:active { height: 6px; }
+    .progress-fill {
+      height: 100%;
+      background: var(--text);
+      border-radius: 100px;
+      width: 0;
+      transition: width 0.18s linear;
+      pointer-events: none;
+    }
+    .progress-times {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-3);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 0.02em;
+    }
+
+    /* === Seek (±10s) buttons === */
+    .ctrl-btn.seek {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 0.5px solid var(--hairline);
+      position: relative;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ctrl-btn.seek svg { width: 28px; height: 28px; }
+    .seek-num {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, calc(-50% + 1px));
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      pointer-events: none;
+    }
+
+    /* === Story list sheet === */
+    .sheet-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.35s var(--ease);
+      z-index: 40;
+    }
+    .sheet-backdrop.open { opacity: 1; pointer-events: auto; }
+
+    .sheet {
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      max-height: 82vh;
+      background: rgba(20, 20, 22, 0.92);
+      backdrop-filter: blur(50px) saturate(180%);
+      -webkit-backdrop-filter: blur(50px) saturate(180%);
+      border-top: 0.5px solid var(--hairline);
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      transform: translateY(100%);
+      transition: transform 0.45s var(--ease);
+      z-index: 50;
+      padding: 10px 0 calc(var(--safe-bottom) + 12px);
+      display: flex;
+      flex-direction: column;
+    }
+    .sheet.open { transform: translateY(0); }
+    .sheet-handle {
+      width: 38px;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 100px;
+      margin: 4px auto 10px;
+      flex-shrink: 0;
+    }
+    .sheet-title {
+      font-size: 17px;
+      font-weight: 700;
+      text-align: center;
+      margin: 0 0 12px;
+      letter-spacing: -0.02em;
+    }
+    .sheet-list {
+      overflow-y: auto;
+      padding: 0 16px 8px;
+      flex: 1;
+      -webkit-overflow-scrolling: touch;
+    }
+    .sheet-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 4px;
+      border-bottom: 0.5px solid var(--hairline);
+      width: 100%;
+      text-align: left;
+      color: var(--text);
+    }
+    .sheet-item:last-child { border-bottom: none; }
+    .sheet-thumb {
+      width: 52px; height: 52px;
+      border-radius: 8px;
+      background-size: cover;
+      background-position: center;
+      flex-shrink: 0;
+      background-color: #222;
+    }
+    .sheet-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .sheet-name {
+      font-size: 15px;
+      font-weight: 500;
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: -0.01em;
+    }
+    .sheet-meta {
+      font-size: 12px;
+      color: var(--text-3);
+      margin: 3px 0 0;
+      font-variant-numeric: tabular-nums;
+    }
+    .sheet-item.current .sheet-name { color: var(--accent); }
+    .sheet-item.current .sheet-meta { color: rgba(10, 132, 255, 0.7); }
+    .sheet-bars {
+      display: inline-flex;
+      gap: 2px;
+      align-items: flex-end;
+      height: 10px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    .sheet-bars span {
+      display: block;
+      width: 2px;
+      background: var(--accent);
+      border-radius: 1px;
+      animation: bars 1s ease-in-out infinite;
+    }
+    .sheet-bars span:nth-child(1) { height: 60%; animation-delay: 0s; }
+    .sheet-bars span:nth-child(2) { height: 100%; animation-delay: 0.2s; }
+    .sheet-bars span:nth-child(3) { height: 70%; animation-delay: 0.4s; }
+    @keyframes bars {
+      0%, 100% { transform: scaleY(1); }
+      50% { transform: scaleY(0.4); }
+    }
+
     /* === Toast === */
     .toast {
       position: fixed;
@@ -344,12 +540,15 @@
 
     /* Small phones */
     @media (max-height: 700px) {
-      .artwork { width: min(70vw, 280px); }
-      .track-info { padding: 18px 8px 14px; }
+      .artwork { width: min(64vw, 240px); }
+      .track-info { padding: 14px 8px 10px; }
       .track-info h2 { font-size: 19px; }
-      .controls { gap: 24px; padding: 4px 0 14px; }
-      .ctrl-btn.primary { width: 72px; height: 72px; }
-      .ctrl-btn.side { width: 56px; height: 56px; }
+      .controls { gap: 10px; padding: 4px 0 12px; }
+      .ctrl-btn.primary { width: 68px; height: 68px; }
+      .ctrl-btn.side { width: 50px; height: 50px; }
+      .ctrl-btn.seek { width: 44px; height: 44px; }
+      .ctrl-btn.seek svg { width: 24px; height: 24px; }
+      .progress-wrap { padding: 0 4px 8px; }
     }
   </style>
 </head>
@@ -378,7 +577,14 @@
       <div class="header-info">
         <p class="header-label">Now Playing</p>
       </div>
-      <div style="width: 36px;"></div>
+      <div class="header-actions">
+        <button class="header-btn" id="shuffle-btn" aria-label="셔플">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10.6 14.6L8.5 16.7c-.7.7-1.7 1.1-2.7 1.1H3v-2h2.8c.5 0 1-.2 1.4-.6l2-2 1.4 1.4zM3 6v2h2.8c.5 0 1 .2 1.4.6l11.4 11.4c.4.4.9.6 1.4.6H21v3l3-3-3-3v3h-1c-.5 0-1-.2-1.4-.6L8.6 7.6C7.9 6.9 6.9 6.5 5.9 6.5H3zm17 0v3l3-3-3-3v3h-1c-1 0-2 .4-2.7 1.1l-2.1 2.1 1.4 1.4 2.1-2c.4-.4.9-.6 1.4-.6H20z"/></svg>
+        </button>
+        <button class="header-btn" id="list-btn" aria-label="목록">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/></svg>
+        </button>
+      </div>
     </header>
 
     <div class="artwork-wrap">
@@ -393,7 +599,21 @@
       <p class="track-index" id="track-index"></p>
     </div>
 
+    <div class="progress-wrap">
+      <div class="progress-bar" id="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <div class="progress-times">
+        <span id="time-current">0:00</span>
+        <span id="time-duration">0:00</span>
+      </div>
+    </div>
+
     <div class="controls">
+      <button class="ctrl-btn seek" id="seek-back-btn" aria-label="10초 뒤로">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><polyline points="3 4 3 9 8 9"/></svg>
+        <span class="seek-num">10</span>
+      </button>
       <button class="ctrl-btn side" id="prev-btn" aria-label="이전">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zM9.5 12l8.5 6V6z"/></svg>
       </button>
@@ -403,6 +623,10 @@
       <button class="ctrl-btn side" id="next-btn" aria-label="다음">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg>
       </button>
+      <button class="ctrl-btn seek" id="seek-fwd-btn" aria-label="10초 앞으로">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><polyline points="21 4 21 9 16 9"/></svg>
+        <span class="seek-num">10</span>
+      </button>
     </div>
 
     <div class="up-next glass">
@@ -411,6 +635,14 @@
       <svg class="up-next-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M9 6l6 6-6 6V6z"/></svg>
     </div>
   </section>
+
+  <!-- Story list sheet -->
+  <div class="sheet-backdrop" id="sheet-backdrop"></div>
+  <aside class="sheet" id="list-sheet" aria-hidden="true">
+    <div class="sheet-handle"></div>
+    <h3 class="sheet-title">동화 목록</h3>
+    <div class="sheet-list" id="sheet-list"></div>
+  </aside>
 
   <!-- Toast -->
   <div class="toast" id="toast"></div>
@@ -457,13 +689,31 @@
     // State
     // ============================================
     const STORAGE_KEY = "sedam.state.v1";
+    const STATS_KEY = "sedam.stats.v1";
+    const RESUME_MIN_SEC = 5;        // 5초 미만 진행 시 처음부터
+    const RESUME_TAIL_SEC = 10;      // 끝 10초 내면 처음부터
+    const RESUME_SAVE_EVERY_MS = 4000;
 
     const state = {
       currentIdx: 0,
       isPlaying: false,
       errorSkipTimeoutId: null,
       apiReady: false,
-      pendingStart: false
+      pendingStart: false,
+      shuffle: false,
+      shuffleQueue: [],
+      shuffleQueueIdx: 0,
+      duration: 0,
+      progressIntervalId: null,
+      lastResumeSaveAt: 0,
+      shouldResume: false,
+      countedThisVideo: false,
+      isScrubbing: false
+    };
+
+    const stats = {
+      playCounts: {},   // { videoId: count }
+      lastPosition: {}  // { videoId: seconds }
     };
 
     let player = null;
@@ -488,6 +738,17 @@
     const artworkFallback = $("artwork-fallback");
     const toastEl = $("toast");
     const resumeHint = $("resume-hint");
+    const seekBackBtn = $("seek-back-btn");
+    const seekFwdBtn = $("seek-fwd-btn");
+    const shuffleBtn = $("shuffle-btn");
+    const listBtn = $("list-btn");
+    const progressBar = $("progress-bar");
+    const progressFill = $("progress-fill");
+    const timeCurrentEl = $("time-current");
+    const timeDurationEl = $("time-duration");
+    const listSheet = $("list-sheet");
+    const sheetBackdrop = $("sheet-backdrop");
+    const sheetList = $("sheet-list");
 
     // ============================================
     // Helpers
@@ -506,7 +767,8 @@
     function saveState() {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({
-          idx: state.currentIdx
+          idx: state.currentIdx,
+          shuffle: state.shuffle
         }));
       } catch (e) {}
     }
@@ -519,11 +781,221 @@
       } catch (e) { return null; }
     }
 
+    function saveStats() {
+      try {
+        localStorage.setItem(STATS_KEY, JSON.stringify(stats));
+      } catch (e) {}
+    }
+
+    function loadStats() {
+      try {
+        const raw = localStorage.getItem(STATS_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (parsed.playCounts) Object.assign(stats.playCounts, parsed.playCounts);
+        if (parsed.lastPosition) Object.assign(stats.lastPosition, parsed.lastPosition);
+      } catch (e) {}
+    }
+
+    function fmtTime(sec) {
+      if (!isFinite(sec) || sec < 0) return "0:00";
+      const s = Math.floor(sec);
+      const m = Math.floor(s / 60);
+      const r = s % 60;
+      return `${m}:${String(r).padStart(2, "0")}`;
+    }
+
     function setArtwork(id) {
       const url = thumbUrl(id);
       artworkFallback.style.backgroundImage = `url('${url}')`;
       bgBlur.style.backgroundImage = `url('${url}')`;
       bgBlur.classList.add("visible");
+    }
+
+    // ============================================
+    // Progress + Seek
+    // ============================================
+    function startProgressLoop() {
+      stopProgressLoop();
+      state.progressIntervalId = setInterval(tickProgress, 500);
+    }
+    function stopProgressLoop() {
+      clearInterval(state.progressIntervalId);
+      state.progressIntervalId = null;
+    }
+    function tickProgress() {
+      if (!player || state.isScrubbing) return;
+      try {
+        const t = player.getCurrentTime() || 0;
+        const d = player.getDuration() || 0;
+        if (d > 0) {
+          state.duration = d;
+          progressFill.style.width = `${Math.min(100, (t / d) * 100)}%`;
+          timeCurrentEl.textContent = fmtTime(t);
+          timeDurationEl.textContent = fmtTime(d);
+
+          // Persist resume position throttled
+          const now = Date.now();
+          if (now - state.lastResumeSaveAt > RESUME_SAVE_EVERY_MS && t > RESUME_MIN_SEC) {
+            state.lastResumeSaveAt = now;
+            const id = PLAYLIST[state.currentIdx].id;
+            stats.lastPosition[id] = Math.floor(t);
+            saveStats();
+          }
+        }
+      } catch (e) {}
+    }
+
+    function seekBy(deltaSec) {
+      if (!player) return;
+      try {
+        const t = player.getCurrentTime() || 0;
+        const d = player.getDuration() || 0;
+        const newT = Math.max(0, Math.min(d - 0.5, t + deltaSec));
+        player.seekTo(newT, true);
+        // Update UI immediately
+        if (d > 0) {
+          progressFill.style.width = `${Math.min(100, (newT / d) * 100)}%`;
+          timeCurrentEl.textContent = fmtTime(newT);
+        }
+      } catch (e) {}
+    }
+
+    function seekToRatio(ratio) {
+      if (!player || !state.duration) return;
+      const r = Math.max(0, Math.min(1, ratio));
+      const newT = state.duration * r;
+      try {
+        player.seekTo(newT, true);
+        progressFill.style.width = `${r * 100}%`;
+        timeCurrentEl.textContent = fmtTime(newT);
+      } catch (e) {}
+    }
+
+    function getRatioFromEvent(e) {
+      const rect = progressBar.getBoundingClientRect();
+      const x = (e.touches && e.touches[0] ? e.touches[0].clientX
+                : e.changedTouches && e.changedTouches[0] ? e.changedTouches[0].clientX
+                : e.clientX);
+      return (x - rect.left) / rect.width;
+    }
+
+    // ============================================
+    // Stats (play count + resume)
+    // ============================================
+    function incrementPlayCount() {
+      if (state.countedThisVideo) return;
+      state.countedThisVideo = true;
+      const id = PLAYLIST[state.currentIdx].id;
+      stats.playCounts[id] = (stats.playCounts[id] || 0) + 1;
+      saveStats();
+    }
+
+    function maybeResume() {
+      if (!state.shouldResume) return;
+      state.shouldResume = false;
+      const id = PLAYLIST[state.currentIdx].id;
+      const savedT = stats.lastPosition[id];
+      if (!savedT || savedT < RESUME_MIN_SEC) return;
+      try {
+        const d = player.getDuration() || 0;
+        if (d > 0 && savedT < d - RESUME_TAIL_SEC) {
+          player.seekTo(savedT, true);
+          showToast(`${fmtTime(savedT)}부터 이어듣기`);
+        }
+      } catch (e) {}
+    }
+
+    function clearResume(id) {
+      if (stats.lastPosition[id] != null) {
+        delete stats.lastPosition[id];
+        saveStats();
+      }
+    }
+
+    // ============================================
+    // Shuffle
+    // ============================================
+    function generateShuffleQueue(startIdx) {
+      const rest = [];
+      for (let i = 0; i < PLAYLIST.length; i++) if (i !== startIdx) rest.push(i);
+      for (let i = rest.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [rest[i], rest[j]] = [rest[j], rest[i]];
+      }
+      return [startIdx, ...rest];
+    }
+
+    function setShuffle(on) {
+      state.shuffle = !!on;
+      if (state.shuffle) {
+        state.shuffleQueue = generateShuffleQueue(state.currentIdx);
+        state.shuffleQueueIdx = 0;
+      }
+      shuffleBtn.classList.toggle("active", state.shuffle);
+      saveState();
+    }
+
+    function toggleShuffle() {
+      setShuffle(!state.shuffle);
+      showToast(state.shuffle ? "셔플 켬 🎲" : "셔플 끔");
+    }
+
+    // ============================================
+    // Story list sheet
+    // ============================================
+    function renderList() {
+      sheetList.innerHTML = "";
+      const frag = document.createDocumentFragment();
+      PLAYLIST.forEach((item, idx) => {
+        const count = stats.playCounts[item.id] || 0;
+        const lastT = stats.lastPosition[item.id] || 0;
+        const isCurrent = idx === state.currentIdx;
+        const btn = document.createElement("button");
+        btn.className = "sheet-item" + (isCurrent ? " current" : "");
+        const meta = count > 0
+          ? `${count}번 재생${lastT > RESUME_MIN_SEC ? ` · ${fmtTime(lastT)}부터` : ""}`
+          : "미재생";
+        const bars = isCurrent && state.isPlaying
+          ? '<span class="sheet-bars"><span></span><span></span><span></span></span>'
+          : "";
+        btn.innerHTML = `
+          <div class="sheet-thumb" style="background-image:url('${thumbUrl(item.id)}')"></div>
+          <div class="sheet-info">
+            <p class="sheet-name">${item.title}${bars}</p>
+            <p class="sheet-meta">${meta}</p>
+          </div>
+        `;
+        btn.addEventListener("click", () => {
+          if (navigator.vibrate) navigator.vibrate(8);
+          if (state.shuffle) {
+            // Regenerate queue starting at picked idx
+            state.shuffleQueue = generateShuffleQueue(idx);
+            state.shuffleQueueIdx = 0;
+          }
+          loadIndex(idx, true);
+          closeSheet();
+        });
+        frag.appendChild(btn);
+      });
+      sheetList.appendChild(frag);
+    }
+
+    function openSheet() {
+      renderList();
+      listSheet.classList.add("open");
+      sheetBackdrop.classList.add("open");
+      listSheet.setAttribute("aria-hidden", "false");
+      setTimeout(() => {
+        const cur = sheetList.querySelector(".sheet-item.current");
+        if (cur) cur.scrollIntoView({ block: "center", behavior: "instant" });
+      }, 50);
+    }
+
+    function closeSheet() {
+      listSheet.classList.remove("open");
+      sheetBackdrop.classList.remove("open");
+      listSheet.setAttribute("aria-hidden", "true");
     }
 
     function updateMediaSession() {
@@ -567,18 +1039,22 @@
       endSession();
     });
 
-    // Resume hint on splash
-    (function showResumeHint() {
+    // Bootstrap from storage
+    (function bootstrap() {
+      loadStats();
       const saved = loadState();
-      if (saved && saved.idx > 0 && saved.idx < PLAYLIST.length) {
-        const t = PLAYLIST[saved.idx].title;
-        resumeHint.innerHTML = `이어보기: <a href="#" id="resume-link">${t}</a>`;
-        resumeHint.hidden = false;
-        $("resume-link").addEventListener("click", (e) => {
-          e.preventDefault();
-          state.currentIdx = saved.idx;
-          startSession();
-        });
+      if (saved) {
+        if (saved.shuffle) setShuffle(true);
+        if (saved.idx > 0 && saved.idx < PLAYLIST.length) {
+          const t = PLAYLIST[saved.idx].title;
+          resumeHint.innerHTML = `이어보기: <a href="#" id="resume-link">${t}</a>`;
+          resumeHint.hidden = false;
+          $("resume-link").addEventListener("click", (e) => {
+            e.preventDefault();
+            state.currentIdx = saved.idx;
+            startSession();
+          });
+        }
       }
     })();
 
@@ -619,6 +1095,8 @@
 
     function actuallyStart() {
       const item = PLAYLIST[state.currentIdx];
+      state.countedThisVideo = false;
+      state.shouldResume = true;
       setArtwork(item.id);
       updateTitles();
 
@@ -652,9 +1130,22 @@
 
     function onPlayerStateChange(e) {
       const S = YT.PlayerState;
-      if (e.data === S.PLAYING) setPlayingVisual(true);
-      else if (e.data === S.PAUSED) setPlayingVisual(false);
-      else if (e.data === S.ENDED) playNext(true);
+      if (e.data === S.PLAYING) {
+        setPlayingVisual(true);
+        incrementPlayCount();
+        maybeResume();
+        startProgressLoop();
+      } else if (e.data === S.PAUSED) {
+        setPlayingVisual(false);
+        stopProgressLoop();
+      } else if (e.data === S.ENDED) {
+        stopProgressLoop();
+        clearResume(PLAYLIST[state.currentIdx].id);
+        playNext(true);
+      } else if (e.data === S.BUFFERING) {
+        // try resume on first buffer in case PLAYING fires after seek
+        maybeResume();
+      }
     }
 
     function onPlayerError(e) {
@@ -683,6 +1174,7 @@
     }
 
     function endSession() {
+      stopProgressLoop();
       try { player && player.stopVideo(); } catch (e) {}
       try { player && player.destroy(); } catch (e) {}
       player = null;
@@ -691,11 +1183,18 @@
       playerScreen.classList.remove("active");
       splash.classList.add("active");
       bgBlur.classList.remove("visible");
+      closeSheet();
     }
 
     function loadIndex(idx, autoplay = true) {
       if (idx < 0 || idx >= PLAYLIST.length) return;
       state.currentIdx = idx;
+      state.countedThisVideo = false;
+      state.shouldResume = true;
+      state.duration = 0;
+      progressFill.style.width = "0%";
+      timeCurrentEl.textContent = "0:00";
+      timeDurationEl.textContent = "0:00";
       const item = PLAYLIST[idx];
       setArtwork(item.id);
       updateTitles();
@@ -709,6 +1208,18 @@
     }
 
     function playNext(auto = false) {
+      if (state.shuffle) {
+        state.shuffleQueueIdx++;
+        if (state.shuffleQueueIdx >= state.shuffleQueue.length) {
+          // exhausted — reshuffle and continue
+          state.shuffleQueue = generateShuffleQueue(state.currentIdx);
+          state.shuffleQueueIdx = 1; // skip current
+          showToast("모든 동화를 다 들었어요. 다시 섞어요 🎲");
+        }
+        const nextIdx = state.shuffleQueue[state.shuffleQueueIdx];
+        loadIndex(nextIdx, true);
+        return;
+      }
       const next = state.currentIdx + 1;
       if (next >= PLAYLIST.length) {
         showToast("마지막 동화까지 끝났어요 💤");
@@ -721,9 +1232,25 @@
     }
 
     function playPrev() {
+      // Spotify-style: if >3s into track, restart; else go back
+      try {
+        const t = player ? (player.getCurrentTime() || 0) : 0;
+        if (t > 3) {
+          player.seekTo(0, true);
+          return;
+        }
+      } catch (e) {}
+      if (state.shuffle) {
+        if (state.shuffleQueueIdx > 0) {
+          state.shuffleQueueIdx--;
+          loadIndex(state.shuffleQueue[state.shuffleQueueIdx], true);
+        } else {
+          try { player && player.seekTo(0, true); } catch (e) {}
+        }
+        return;
+      }
       const prev = state.currentIdx - 1;
       if (prev < 0) {
-        // restart current
         try { player && player.seekTo(0, true); } catch (e) {}
         return;
       }
@@ -743,8 +1270,20 @@
       const cur = PLAYLIST[state.currentIdx];
       currentTitleEl.textContent = cur.title;
       currentTitleEl.classList.remove("loading");
-      trackIndexEl.textContent = `${state.currentIdx + 1} / ${PLAYLIST.length}`;
-      const nxt = PLAYLIST[state.currentIdx + 1];
+      const count = stats.playCounts[cur.id] || 0;
+      const countLabel = count > 0 ? ` · ${count}번째` : "";
+      trackIndexEl.textContent = `${state.currentIdx + 1} / ${PLAYLIST.length}${countLabel}`;
+
+      // Up Next
+      let nxt;
+      if (state.shuffle) {
+        const nextQueueIdx = state.shuffleQueueIdx + 1;
+        nxt = nextQueueIdx < state.shuffleQueue.length
+          ? PLAYLIST[state.shuffleQueue[nextQueueIdx]]
+          : null;
+      } else {
+        nxt = PLAYLIST[state.currentIdx + 1];
+      }
       nextTitleEl.textContent = nxt ? nxt.title : "마지막 동화예요";
       updateMediaSession();
     }
@@ -786,6 +1325,58 @@
       if (navigator.vibrate) navigator.vibrate(8);
       playNext();
     });
+    seekBackBtn.addEventListener("click", () => {
+      if (navigator.vibrate) navigator.vibrate(6);
+      seekBy(-10);
+    });
+    seekFwdBtn.addEventListener("click", () => {
+      if (navigator.vibrate) navigator.vibrate(6);
+      seekBy(10);
+    });
+    shuffleBtn.addEventListener("click", () => {
+      if (navigator.vibrate) navigator.vibrate(8);
+      toggleShuffle();
+      updateTitles(); // refresh Up Next
+    });
+    listBtn.addEventListener("click", () => {
+      if (navigator.vibrate) navigator.vibrate(8);
+      openSheet();
+    });
+    sheetBackdrop.addEventListener("click", closeSheet);
+
+    // Drag handle on sheet — swipe down to close
+    let sheetTouchStartY = 0;
+    listSheet.addEventListener("touchstart", (e) => {
+      // only start drag if touch is on handle area (top 40px)
+      const rect = listSheet.getBoundingClientRect();
+      if (e.touches[0].clientY - rect.top > 40) return;
+      sheetTouchStartY = e.touches[0].clientY;
+    }, { passive: true });
+    listSheet.addEventListener("touchend", (e) => {
+      if (!sheetTouchStartY) return;
+      const dy = e.changedTouches[0].clientY - sheetTouchStartY;
+      sheetTouchStartY = 0;
+      if (dy > 60) closeSheet();
+    }, { passive: true });
+
+    // Progress bar tap-to-seek + drag-to-scrub
+    function onProgressDown(e) {
+      state.isScrubbing = true;
+      seekToRatio(getRatioFromEvent(e));
+    }
+    function onProgressMove(e) {
+      if (!state.isScrubbing) return;
+      e.preventDefault();
+      seekToRatio(getRatioFromEvent(e));
+    }
+    function onProgressUp() {
+      if (!state.isScrubbing) return;
+      state.isScrubbing = false;
+    }
+    progressBar.addEventListener("touchstart", onProgressDown, { passive: true });
+    progressBar.addEventListener("touchmove", onProgressMove, { passive: false });
+    progressBar.addEventListener("touchend", onProgressUp);
+    progressBar.addEventListener("mousedown", (e) => { onProgressDown(e); document.addEventListener("mousemove", onProgressMove); document.addEventListener("mouseup", () => { onProgressUp(); document.removeEventListener("mousemove", onProgressMove); }, { once: true }); });
 
     // Swipe on artwork
     let touchStartX = 0, touchStartY = 0, touchStartT = 0;
